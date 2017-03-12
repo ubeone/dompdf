@@ -121,7 +121,15 @@ class Text extends AbstractFrameReflower
             $word = $words[$i] . (isset($words[$i + 1]) ? $words[$i + 1] : "");
             $word_width = $this->getFontMetrics()->getTextWidth($word, $font, $size, $word_spacing, $char_spacing);
             if ($width + $word_width + $mbp_width > $available_width) {
-                break;
+                
+                // Try again with one word
+				$word = $words[$i];
+				$word_width = $this->getFontMetrics()->getTextWidth($word, $font, $size, $word_spacing, $char_spacing);
+				if ($width + $word_width + $mbp_width > $available_width) {
+					break;
+				} else {
+					$i--;
+				}
             }
 
             $width += $word_width;
