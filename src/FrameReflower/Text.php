@@ -11,6 +11,7 @@ namespace Dompdf\FrameReflower;
 use Dompdf\FrameDecorator\Block as BlockFrameDecorator;
 use Dompdf\FrameDecorator\Text as TextFrameDecorator;
 use Dompdf\FontMetrics;
+use IntlBreakIterator;
 
 /**
  * Reflows text frames.
@@ -38,6 +39,11 @@ class Text extends AbstractFrameReflower
     private $fontMetrics;
 
     /**
+     * @var BreakIterator
+     */
+    private $breakIterator;
+	
+    /**
      * @param TextFrameDecorator $frame
      * @param FontMetrics $fontMetrics
      */
@@ -45,6 +51,7 @@ class Text extends AbstractFrameReflower
     {
         parent::__construct($frame);
         $this->setFontMetrics($fontMetrics);
+	$this->breakIterator = IntlBreakIterator::createWordInstance();
     }
 
     /**
@@ -108,7 +115,16 @@ class Text extends AbstractFrameReflower
         }
 
         // split the text into words
-        $words = preg_split('/([\s-]+)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+	    
+        //$words = preg_split('/([\s-]+)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+	
+	// use ICU for some languages, ex. Thai
+	$this->breakIterator->setText($text);
+	$words = array();
+	foreach($this->breakIterator->getPartsIterator() as $sentence) {
+		$words[] = $sentence;
+	}
+    
         $wc = count($words);
 
         // Determine the split point
